@@ -3,3 +3,6 @@ run:
 
 build:
 	go build
+
+install:
+	cp proxima ~/Desktop/proxima
