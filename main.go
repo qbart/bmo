@@ -22,9 +22,11 @@ const (
 )
 
 var (
-	fontpixel      font.Face
-	smallfontpixel font.Face
-	buttons        []*Button
+	debug                  string
+	fontpixel              font.Face
+	smallfontpixel         font.Face
+	buttons                []*Button
+	prevMouseClickDuration int
 )
 
 type Button struct {
@@ -37,8 +39,8 @@ type Button struct {
 
 func (b *Button) contains(x, y int) bool {
 	return float64(x) >= b.x &&
-		float64(y) >= b.y &&
 		float64(x) <= b.x+b.size-1 &&
+		float64(y) >= b.y &&
 		float64(y) <= b.y+b.size-1
 }
 
@@ -81,14 +83,14 @@ func init() {
 		c:    color.RGBA{0x00, 0xff, 0x00, 0xff},
 	})
 	buttons = append(buttons, &Button{
-		t:    "Off",
+		t:    "White",
 		x:    60,
 		y:    200,
 		size: 100,
 		c:    color.RGBA{0xff, 0xff, 0xff, 0xff},
 	})
 	buttons = append(buttons, &Button{
-		t:    "White",
+		t:    "Off",
 		x:    190,
 		y:    200,
 		size: 100,
@@ -98,15 +100,17 @@ func init() {
 
 func update(screen *ebiten.Image) error {
 	mx, my := ebiten.CursorPosition()
-	selected := ""
 
-	if inpututil.IsTouchJustReleased(0) {
+	mouseClickDuration := inpututil.MouseButtonPressDuration(ebiten.MouseButtonLeft)
+	if mouseClickDuration == 0 && prevMouseClickDuration > 0 {
 		for _, button := range buttons {
 			if button.contains(mx, my) {
-				selected = button.t
+				debug = button.t
+				break
 			}
 		}
 	}
+	prevMouseClickDuration = mouseClickDuration
 
 	if ebiten.IsDrawingSkipped() {
 		return nil
@@ -124,8 +128,7 @@ func update(screen *ebiten.Image) error {
 	msg := fmt.Sprintf("v%s", version)
 	text.Draw(screen, msg, smallfontpixel, 450, 310, color.RGBA{0xce, 0xa9, 0x9e, 0xff})
 
-	text.Draw(screen, selected, smallfontpixel, 350, 310, color.RGBA{0xce, 0xa9, 0x9e, 0xff})
-
+	ebitenutil.DebugPrint(screen, debug)
 	return nil
 }
 
