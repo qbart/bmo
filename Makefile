@@ -1,5 +1,6 @@
 build:
-	go build
+	mkdir -p bin/
+	go build -o bin/bmo
 
 update:
 	git pull
