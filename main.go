@@ -1,64 +1,136 @@
 package main
 
 import (
-	"log"
 	"fmt"
-	"image/color"
 	"github.com/golang/freetype/truetype"
-	"golang.org/x/image/font"
 	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/examples/resources/fonts"
+	"github.com/hajimehoshi/ebiten/ebitenutil"
+	"github.com/hajimehoshi/ebiten/inpututil"
 	"github.com/hajimehoshi/ebiten/text"
+	"golang.org/x/image/font"
+	"image/color"
+	// "io/ioutil"
+	"github.com/hajimehoshi/ebiten/examples/resources/fonts"
+	"log"
 )
 
 const (
-	sw = 480
-	sh = 320
+	sw      = 480
+	sh      = 320
+	name    = "Proxima"
+	version = "0.1"
 )
 
 var (
-	sampleText      = `The quick brown fox jumps over the lazy dog.`
-	mplusNormalFont font.Face
-	mplusBigFont    font.Face
+	fontpixel      font.Face
+	smallfontpixel font.Face
+	buttons        []*Button
 )
 
+type Button struct {
+	t    string
+	x    float64
+	y    float64
+	size float64
+	c    color.Color
+}
+
+func (b *Button) contains(x, y int) bool {
+	return float64(x) >= b.x &&
+		float64(y) >= b.y &&
+		float64(x) <= b.x+b.size-1 &&
+		float64(y) <= b.y+b.size-1
+}
+
 func init() {
-	tt, err := truetype.Parse(fonts.MPlus1pRegular_ttf)
+	// b, err := ioutil.ReadFile("custom font path")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// 	return
+	// }
+	b := fonts.MPlus1pRegular_ttf
+
+	f, err := truetype.Parse(b)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
 
-	const dpi = 72
-	mplusNormalFont = truetype.NewFace(tt, &truetype.Options{
-		Size:    24,
-		DPI:     dpi,
+	fontpixel = truetype.NewFace(f, &truetype.Options{
+		Size:    18,
 		Hinting: font.HintingFull,
 	})
-	mplusBigFont = truetype.NewFace(tt, &truetype.Options{
-		Size:    48,
-		DPI:     dpi,
+	smallfontpixel = truetype.NewFace(f, &truetype.Options{
+		Size:    12,
 		Hinting: font.HintingFull,
+	})
+
+	buttons = make([]*Button, 0)
+	buttons = append(buttons, &Button{
+		t:    "Blue",
+		x:    60,
+		y:    70,
+		size: 100,
+		c:    color.RGBA{0x00, 0x00, 0xff, 0xff},
+	})
+	buttons = append(buttons, &Button{
+		t:    "Green",
+		x:    190,
+		y:    70,
+		size: 100,
+		c:    color.RGBA{0x00, 0xff, 0x00, 0xff},
+	})
+	buttons = append(buttons, &Button{
+		t:    "Off",
+		x:    60,
+		y:    200,
+		size: 100,
+		c:    color.RGBA{0xff, 0xff, 0xff, 0xff},
+	})
+	buttons = append(buttons, &Button{
+		t:    "White",
+		x:    190,
+		y:    200,
+		size: 100,
+		c:    color.RGBA{0x00, 0x00, 0x00, 0xff},
 	})
 }
 
 func update(screen *ebiten.Image) error {
+	mx, my := ebiten.CursorPosition()
+	selected := ""
+
+	if inpututil.IsTouchJustReleased(0) {
+		for _, button := range buttons {
+			if button.contains(mx, my) {
+				selected = button.t
+			}
+		}
+	}
+
 	if ebiten.IsDrawingSkipped() {
 		return nil
 	}
 
-	// Draw info
-	msg := fmt.Sprintf("TPS: %0.2f", ebiten.CurrentTPS())
-	text.Draw(screen, msg, mplusNormalFont, 20, 40, color.White)
+	screen.Fill(color.RGBA{0x57, 0x38, 0x5d, 0xff})
 
-	// Draw the sample text
-	text.Draw(screen, sampleText, mplusNormalFont, 20, 80, color.White)
+	ebitenutil.DrawRect(screen, 0, 20, 120, 24, color.RGBA{0xd2, 0x80, 0x7e, 0xff})
+	text.Draw(screen, name, fontpixel, 20, 38, color.RGBA{0x56, 0x04, 0x19, 0xff})
 
+	for _, button := range buttons {
+		ebitenutil.DrawRect(screen, button.x, button.y, button.size, button.size, button.c)
+	}
+
+	msg := fmt.Sprintf("v%s", version)
+	text.Draw(screen, msg, smallfontpixel, 450, 310, color.RGBA{0xce, 0xa9, 0x9e, 0xff})
+
+	text.Draw(screen, selected, smallfontpixel, 350, 310, color.RGBA{0xce, 0xa9, 0x9e, 0xff})
 
 	return nil
 }
 
 func main() {
-	if err := ebiten.Run(update, sw, sh, 1, "Proxima"); err != nil {
+	if err := ebiten.Run(update, sw, sh, 1, name); err != nil {
 		log.Fatal(err)
 	}
 }
