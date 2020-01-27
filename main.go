@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/veandco/go-sdl2/sdl"
+	"github.com/qbart/bmo/bmo"
 )
+
 
 func main() {
 	if err := sdl.Init(sdl.INIT_VIDEO | sdl.INIT_EVENTS); err != nil {
@@ -38,6 +40,11 @@ func main() {
 	src := sdl.Rect{0, 0, 320, 480}
 	dst := src
 
+	devices := bmo.NewDevices()
+	// register by DNS
+	devices.RegisterYeeBulb("bmo-yee1")
+	devices.RegisterYeeBulb("bmo-yee2")
+
 	running := true
 	for running {
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
@@ -46,8 +53,11 @@ func main() {
 				running = false
 				break
 			case *sdl.MouseButtonEvent:
-				fmt.Printf("[%d ms] MouseButton\ttype:%d\tid:%d\tx:%d\ty:%d\tbutton:%d\tstate:%d\n",
-					t.Timestamp, t.Type, t.Which, t.X, t.Y, t.Button, t.State)
+				if t.State == sdl.RELEASED {
+					fmt.Printf("[%d ms] MouseButton\ttype:%d\tid:%d\tx:%d\ty:%d\tbutton:%d\tstate:%d\n",
+						t.Timestamp, t.Type, t.Which, t.X, t.Y, t.Button, t.State)
+
+				}
 			}
 		}
 

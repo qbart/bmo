@@ -1,64 +1,106 @@
 package bmo
 
-type Any interface{}
+import (
+	"encoding/json"
+	"fmt"
+	"net"
+	"time"
+)
 
+// YeeBulb data.
 type YeeBulb struct {
-	host string
-	port int
+	addr string
 }
 
-// func NewYeeBulb(host string) *YeeBulb {
-// 	return &YeeBulb{
-// 		host: host,
-// 		port: 55443,
-// 	}
-// }
+// YeeCmd json.
+type YeeCmd struct {
+	ID     int64      `json:"id"`
+	Method string     `json:"method"`
+	Params []yeeParam `json:"params"`
+}
 
-// func (y *YeeBulb) Power(on bool) {
-// 	value := "on"
-// 	if !on {
-// 		value = "off"
-// 	}
-// 	y.sendMessage("power", []Any{value, "smooth", 500})
-// }
+// YeeError struct.
+type YeeError struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
 
-// func (y *YeeBulb) Brightness(int value) {
-// 	if value < 0 {
-// 		value = 0
-// 	} else if value > 100 {
-// 		value = 100
-// 	}
-// 	y.sendMessage("set_bright", []Any{value, "smooth", 500})
-// }
+// YeeResponse struct.
+type YeeResponse struct {
+	ID     int64    `json:"id"`
+	Result []string `json:"result"`
+	Error  YeeError `json:"error"`
+}
 
-// func (y *YeeBulb) RGB(r, g, b uint8) {
-// 	color := ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF)
-// 	y.sendMessage("set_rgb", []Any{color, "smooth", "500"})
-// }
+type yeeParam interface{}
 
-// func (y *YeeBulb) sendMessage(method string, params []Any) {
-// 	//   def build_msg(id:, method:, params: [])
-// 	//     msg = JSON.dump({
-// 	//       id: id,
-// 	//       method: method,
-// 	//       params: params
-// 	//     })
-// 	//     "#{msg}\r\n"
-// 	//   end
+// NewYeeBulb creates a new yee based on IP.
+func NewYeeBulb(ip string) *YeeBulb {
+	return &YeeBulb{addr: fmt.Sprint(ip, ":", 55443)}
+}
 
-// 	//     TCPSocket.open(host, port) do |tcp|
-// 	//       tcp.puts(build_msg(id: generate_id(), method: method, params: params))
-// 	//       json = JSON.parse(tcp.gets)
-// 	//       Response.new(json["id"], json["result"]&.first == "ok")
-// 	//     end
-// }
+// Power toggles bulb on/off.
+func (y *YeeBulb) Power(on bool) {
+	value := "on"
+	if !on {
+		value = "off"
+	}
+	y.sendMessage("set_power", []yeeParam{value, "smooth", 500})
+}
 
-// func (y *YeeBulb) generateId() uint64 {
-// 	// return Time.now.to_i
-// }
+// Brightness sets bright parameter.
+func (y *YeeBulb) Brightness(value int) {
+	value = Clamp(value, 0, 100)
+	y.sendMessage("set_bright", []yeeParam{value, "smooth", 500})
+}
 
-// // a = Bulb.new("192.168.1.50")
-// // b = Bulb.new("192.168.1.51")
+// Color sets RGB color.
+func (y *YeeBulb) Color(r, g, b uint8) {
+	color := int(r) * 65536 + int(g) * 256 + int(b)
+	y.sendMessage("set_rgb", []yeeParam{color, "smooth", 500})
+}
 
-// // puts a.rgb(100, 255, 255)
-// // puts a.brightness(1)
+func (y *YeeBulb) sendMessage(method string, params []yeeParam) YeeResponse {
+	conn, err := net.Dial("tcp", y.addr)
+	if err != nil {
+		return YeeResponse{
+			Error: YeeError{
+				Message: "Failed to connect to Yee Bulb",
+			},
+		}
+	}
+	defer conn.Close()
+
+	// prepare command
+	cmd := YeeCmd{
+		ID:     time.Now().Unix(),
+		Method: method,
+		Params: params,
+	}
+	jsonCmd, err := json.Marshal(cmd)
+	if err != nil {
+		return YeeResponse{
+			Error: YeeError{
+				Message: "JSON marshaling failed",
+			},
+		}
+	}
+
+	// send command to bulb (must end with CRLF)
+	fmt.Fprintf(conn, "%s\r\n", jsonCmd)
+	// fmt.Println("[DEBUG] ", string(jsonCmd))
+
+	// read response
+	var buf [4096]byte
+	read, _ := conn.Read(buf[:])
+	var resp YeeResponse
+	if err := json.Unmarshal(buf[:read], &resp); err != nil {
+		return YeeResponse{
+			Error: YeeError{
+				Message: "JSON unmarshaling failed",
+			},
+		}
+	}
+
+	return resp
+}
