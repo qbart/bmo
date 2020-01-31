@@ -1,7 +1,6 @@
 package bmo
 
 import "github.com/veandco/go-sdl2/sdl"
-import "fmt"
 
 // Component struct.
 type SliderGroup struct {

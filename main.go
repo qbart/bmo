@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/qbart/bmo/bmo"
 )
@@ -57,6 +58,20 @@ func main() {
 	components[0].OnMousePressed(func(event bmo.MouseEvent) {
 		components[1].Show(true)
 	})
+
+	// WIP
+	components[1].Show(true)
+	components[1].OnMousePressed(func(event bmo.MouseEvent) {
+		fmt.Println("Pressed {}", event)
+	})
+	components[1].OnMouseMoved(func(event bmo.MouseEvent) {
+		fmt.Println("Moved {}", event)
+	})
+	components[1].OnMouseReleased(func(event bmo.MouseEvent) {
+		fmt.Println("Released {}", event)
+	})
+
+	//
 
 	// greenButton / rgb(40, 187, 65)
 	// aquaButton / rgb(69, 240, 217)
