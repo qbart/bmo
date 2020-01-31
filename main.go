@@ -45,6 +45,11 @@ func main() {
 	devices.RegisterYeeBulb("bmo-yee1")
 	devices.RegisterYeeBulb("bmo-yee2")
 
+	screen := bmo.Screen{
+		W: 320,
+		H: 480,
+	}
+
 	running := true
 	for running {
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
@@ -53,13 +58,12 @@ func main() {
 				running = false
 				break
 			case *sdl.MouseButtonEvent:
-				if t.State == sdl.RELEASED {
+				if t.State == sdl.PRESSED {
+					x, y := screen.Position(t)
 					fmt.Printf("[%d ms] MouseButton\ttype:%d\tid:%d\tx:%d\ty:%d\tbutton:%d\tstate:%d\n",
-						t.Timestamp, t.Type, t.Which, t.X, t.Y, t.Button, t.State)
+						t.Timestamp, t.Type, t.Which, x, y, t.Button, t.State)
 
 				}
-			default:
-				fmt.Println("event {}", t)
 			}
 		}
 
