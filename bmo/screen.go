@@ -12,6 +12,6 @@ type Screen struct {
 }
 
 // Position calculates screen position.
-func (s *Screen) Position(event *sdl.MouseButtonEvent) Point {
-	return s.position(event)
+func (s *Screen) Position(x, y int32) Point {
+	return s.position(x, y)
 }

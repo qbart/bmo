@@ -1,8 +1,5 @@
 package bmo
 
-import "github.com/veandco/go-sdl2/sdl"
-
-
-func (s *Screen) position(event *sdl.MouseButtonEvent) Point {
-	return Point{event.X, event.Y}
+func (s *Screen) position(x, y int32) Point {
+	return Point{x, y}
 }

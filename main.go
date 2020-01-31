@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/qbart/bmo/bmo"
 )
@@ -46,19 +45,19 @@ func main() {
 	devices.RegisterYeeBulb("bmo-yee2")
 
 	components := make([]bmo.IComponent, 0)
-	components = append(components, &bmo.Component{
-		Rect: sdl.Rect{180, 340, 80, 80},
-		Color: bmo.RGB(248, 0, 85),
-	})
-	components = append(components, &bmo.Component{
-		Rect: sdl.Rect{40, 40, 240, 202},
-		Color: bmo.RGB(211, 255, 219),
-	})
+	components = append(components, bmo.NewComponent(
+		sdl.Rect{180, 340, 80, 80},
+		bmo.RGB(248, 0, 85),
+	))
+	components = append(components, bmo.NewSliderGroup(
+		sdl.Rect{40, 40, 240, 202},
+		bmo.RGB(211, 255, 219),
+	))
 	components[0].Show(true)
 	components[0].OnMousePressed(func(event bmo.MouseEvent) {
 		components[1].Show(true)
-		fmt.Println("Point {}", event.P)
 	})
+
 	// greenButton / rgb(40, 187, 65)
 	// aquaButton / rgb(69, 240, 217)
 	// yellowButton / rgb(247, 251, 115)
@@ -70,14 +69,21 @@ func main() {
 			case *sdl.QuitEvent:
 				running = false
 				break
+
 			case *sdl.MouseButtonEvent:
-				if t.State == sdl.PRESSED {
-					p := screen.Position(t)
+					p := screen.Position(t.X, t.Y)
 					for _, c := range components {
-						if c.Contains(p) {
+						if t.State == sdl.PRESSED {
 							c.TriggerOnMousePressed(p)
+						} else  if t.State == sdl.RELEASED {
+							c.TriggerOnMouseReleased(p)
 						}
 					}
+
+			case *sdl.MouseMotionEvent:
+				p := screen.Position(t.X, t.Y)
+				for _, c := range components {
+					c.TriggerOnMouseMoved(p)
 				}
 			}
 		}
@@ -90,6 +96,4 @@ func main() {
 		renderer.Present()
 		sdl.Delay(16)
 	}
-
-	fmt.Println("")
 }
