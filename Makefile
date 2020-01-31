@@ -8,6 +8,6 @@ build:
 update:
 	git pull
 	go build -o bin/bmo
-	cp bin/bmo ~/Desktop/bmo
 	pkill -f Desktop/bmo
+	cp bin/bmo ~/Desktop/bmo
 	echo "Launch app manually"

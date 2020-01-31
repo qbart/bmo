@@ -58,6 +58,8 @@ func main() {
 						t.Timestamp, t.Type, t.Which, t.X, t.Y, t.Button, t.State)
 
 				}
+			default:
+				fmt.Println("event {}", t)
 			}
 		}
 
