@@ -12,11 +12,15 @@ func main() {
 	}
 	defer sdl.Quit()
 
+	screen := bmo.Screen{
+		Rect: sdl.Rect{0, 0, 320, 480},
+	}
+
 	window, err := sdl.CreateWindow(
 		"BMO",
 		sdl.WINDOWPOS_UNDEFINED,
 		sdl.WINDOWPOS_UNDEFINED,
-		320, 480,
+		screen.Rect.W, screen.Rect.H,
 		sdl.WINDOW_SHOWN|sdl.WINDOW_BORDERLESS,
 	)
 	if err != nil {
@@ -36,29 +40,28 @@ func main() {
 	bkgTex, _ := renderer.CreateTextureFromSurface(bkgBMP)
 	defer bkgTex.Destroy()
 
-	src := sdl.Rect{0, 0, 320, 480}
-	dst := src
-
 	devices := bmo.NewDevices()
 	// register by DNS
 	devices.RegisterYeeBulb("bmo-yee1")
 	devices.RegisterYeeBulb("bmo-yee2")
-
-	screen := bmo.Screen{
-		W: 320,
-		H: 480,
-	}
 
 	components := make([]bmo.IComponent, 0)
 	components = append(components, &bmo.Component{
 		Rect: sdl.Rect{180, 340, 80, 80},
 		Color: bmo.RGB(248, 0, 85),
 	})
+	components = append(components, &bmo.Component{
+		Rect: sdl.Rect{40, 40, 240, 202},
+		Color: bmo.RGB(211, 255, 219),
+	})
+	components[0].Show(true)
+	components[0].OnMousePressed(func(event bmo.MouseEvent) {
+		components[1].Show(true)
+		fmt.Println("Point {}", event.P)
+	})
 	// greenButton / rgb(40, 187, 65)
 	// aquaButton / rgb(69, 240, 217)
 	// yellowButton / rgb(247, 251, 115)
-	// display / rgb(211, 255, 219)
-	// 40,40, 240, 202
 
 	running := true
 	for running {
@@ -72,7 +75,7 @@ func main() {
 					p := screen.Position(t)
 					for _, c := range components {
 						if c.Contains(p) {
-							fmt.Println("Clicked {}", p)
+							c.TriggerOnMousePressed(p)
 						}
 					}
 				}
@@ -80,11 +83,13 @@ func main() {
 		}
 
 		renderer.Clear()
-		renderer.Copy(bkgTex, &src, &dst)
+		renderer.Copy(bkgTex, &screen.Rect, &screen.Rect)
 		for _, c := range components {
 			c.Draw(renderer)
 		}
 		renderer.Present()
 		sdl.Delay(16)
 	}
+
+	fmt.Println("")
 }

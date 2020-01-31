@@ -8,8 +8,7 @@ type Point struct {
 }
 
 type Screen struct {
-	W int32
-	H int32
+	Rect sdl.Rect
 }
 
 // Position calculates screen position.
