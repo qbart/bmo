@@ -100,6 +100,13 @@ func main() {
 				for _, c := range components {
 					c.TriggerOnMouseMoved(p)
 				}
+
+			case *sdl.TouchFingerEvent:
+				fmt.Println("touch {}", t)
+				// p := screen.Position(t.X, t.Y)
+				// for _, c := range components {
+				// 	c.TriggerOnMouseMoved(p)
+				// }
 			}
 		}
 
