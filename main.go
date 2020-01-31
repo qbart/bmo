@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/qbart/bmo/bmo"
 )
@@ -59,20 +58,6 @@ func main() {
 		components[1].Show(true)
 	})
 
-	// WIP
-	components[1].Show(true)
-	components[1].OnMousePressed(func(event bmo.MouseEvent) {
-		fmt.Println("Pressed {}", event)
-	})
-	components[1].OnMouseMoved(func(event bmo.MouseEvent) {
-		fmt.Println("Moved {}", event)
-	})
-	components[1].OnMouseReleased(func(event bmo.MouseEvent) {
-		fmt.Println("Released {}", event)
-	})
-
-	//
-
 	// greenButton / rgb(40, 187, 65)
 	// aquaButton / rgb(69, 240, 217)
 	// yellowButton / rgb(247, 251, 115)
@@ -102,11 +87,7 @@ func main() {
 				}
 
 			case *sdl.TouchFingerEvent:
-				fmt.Println("touch {}", t)
-				p := screen.Position(
-					int32(t.X * float32(screen.Rect.W)),
-					int32(t.Y * float32(screen.Rect.H)),
-				)
+				p := screen.TouchPosition(t.X, t.Y)
 				for _, c := range components {
 					c.TriggerOnMouseMoved(p)
 				}
