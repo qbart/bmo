@@ -5,12 +5,9 @@ build:
 	mkdir -p bin/
 	go build -o bin/bmo
 
-release:
-	echo TODO
-
 update:
 	git pull
-	go build
-	cp proxima ~/Desktop/proxima
-	pkill -f Desktop/proxima
+	go build -o bin/bmo
+	cp bin/bmo ~/Desktop/bmo
+	pkill -f Desktop/bmo
 	echo "Launch app manually"
