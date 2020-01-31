@@ -6,7 +6,6 @@ import (
 	"github.com/qbart/bmo/bmo"
 )
 
-
 func main() {
 	if err := sdl.Init(sdl.INIT_VIDEO | sdl.INIT_EVENTS); err != nil {
 		panic(err)
@@ -50,6 +49,17 @@ func main() {
 		H: 480,
 	}
 
+	components := make([]bmo.IComponent, 0)
+	components = append(components, &bmo.Component{
+		Rect: sdl.Rect{180, 340, 80, 80},
+		Color: bmo.RGB(248, 0, 85),
+	})
+	// greenButton / rgb(40, 187, 65)
+	// aquaButton / rgb(69, 240, 217)
+	// yellowButton / rgb(247, 251, 115)
+	// display / rgb(211, 255, 219)
+	// 40,40, 240, 202
+
 	running := true
 	for running {
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
@@ -59,16 +69,21 @@ func main() {
 				break
 			case *sdl.MouseButtonEvent:
 				if t.State == sdl.PRESSED {
-					x, y := screen.Position(t)
-					fmt.Printf("[%d ms] MouseButton\ttype:%d\tid:%d\tx:%d\ty:%d\tbutton:%d\tstate:%d\n",
-						t.Timestamp, t.Type, t.Which, x, y, t.Button, t.State)
-
+					p := screen.Position(t)
+					for _, c := range components {
+						if c.Contains(p) {
+							fmt.Println("Clicked {}", p)
+						}
+					}
 				}
 			}
 		}
 
 		renderer.Clear()
 		renderer.Copy(bkgTex, &src, &dst)
+		for _, c := range components {
+			c.Draw(renderer)
+		}
 		renderer.Present()
 		sdl.Delay(16)
 	}
