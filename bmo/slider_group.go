@@ -2,11 +2,15 @@ package bmo
 
 import "github.com/veandco/go-sdl2/sdl"
 
+
+type OnChangeSliderCallback func(color RGBColor, brightness int)
+
 // Component struct.
 type SliderGroup struct {
 	c      *Component
 	values [4]float32
 	active int
+	onChange OnChangeSliderCallback
 }
 
 func NewSliderGroup(rect sdl.Rect, color RGBColor) *SliderGroup {
@@ -44,6 +48,10 @@ func (sg *SliderGroup) Contains(point Point) bool {
 
 func (sg *SliderGroup) Show(visible bool) {
 	sg.c.Show(visible)
+}
+
+func (sg *SliderGroup) OnChange(callback OnChangeSliderCallback) {
+	sg.onChange = callback
 }
 
 func (sg *SliderGroup) OnMousePressed(callback OnMouseEventCallback) {
@@ -91,6 +99,17 @@ func (sg *SliderGroup) mouseMoveCallback(e MouseEvent) {
 }
 
 func (sg *SliderGroup) mouseReleaseCallback(e MouseEvent) {
+	sg.mouseMoveCallback(e)
+	if sg.active != -1 && sg.onChange != nil {
+		sg.onChange(
+			RGB(
+				uint8(sg.values[0] * 255),
+				uint8(sg.values[1] * 255),
+				uint8(sg.values[2] * 255),
+			),
+			Clamp(int(sg.values[3] * 100), 1, 100),
+		)
+	}
 	sg.active = -1
 }
 

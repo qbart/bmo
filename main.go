@@ -44,18 +44,26 @@ func main() {
 	devices.RegisterYeeBulb("bmo-yee1")
 	devices.RegisterYeeBulb("bmo-yee2")
 
+	showSlider := true
+
 	components := make([]bmo.IComponent, 0)
 	components = append(components, bmo.NewComponent(
 		sdl.Rect{180, 340, 80, 80},
 		bmo.RGB(248, 0, 85),
 	))
-	components = append(components, bmo.NewSliderGroup(
+	slider := bmo.NewSliderGroup(
 		sdl.Rect{40, 40, 240, 202},
 		bmo.RGB(211, 255, 219),
-	))
+	)
+	components = append(components, slider)
 	components[0].Show(true)
 	components[0].OnMousePressed(func(event bmo.MouseEvent) {
-		components[1].Show(true)
+		components[1].Show(showSlider)
+		showSlider = !showSlider
+	})
+	slider.OnChange(func(color bmo.RGBColor, brightness int) {
+		devices.BulbsBrightness(brightness)
+		devices.BulbsColor(color.R, color.G, color.B)
 	})
 
 	// greenButton / rgb(40, 187, 65)

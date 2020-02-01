@@ -13,6 +13,13 @@ Compile SDL 2.10 and link shared lib:
 ln -s /usr/local/lib/libSDL2-2.0.so.0 /usr/lib/libSDL2-2.0.so.0
 ```
 
+## Calibration
+
+```
+DISPLAY=:0.0 xinput_calibrator
+ "198 3865 3949 200"
+```
+
 ## Docs
 
 YeeLight API: https://www.yeelight.com/download/Yeelight_Inter-Operation_Spec.pdf
