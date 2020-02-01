@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/veandco/go-sdl2/sdl"
 	"github.com/qbart/bmo/bmo"
+	"github.com/veandco/go-sdl2/sdl"
 )
 
 func main() {
@@ -71,14 +71,14 @@ func main() {
 				break
 
 			case *sdl.MouseButtonEvent:
-					p := screen.Position(t.X, t.Y)
-					for _, c := range components {
-						if t.State == sdl.PRESSED {
-							c.TriggerOnMousePressed(p)
-						} else  if t.State == sdl.RELEASED {
-							c.TriggerOnMouseReleased(p)
-						}
+				p := screen.Position(t.X, t.Y)
+				for _, c := range components {
+					if t.State == sdl.PRESSED {
+						c.TriggerOnMousePressed(p)
+					} else if t.State == sdl.RELEASED {
+						c.TriggerOnMouseReleased(p)
 					}
+				}
 
 			case *sdl.MouseMotionEvent:
 				p := screen.Position(t.X, t.Y)
