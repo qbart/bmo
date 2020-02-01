@@ -22,3 +22,8 @@ func (s *Screen) TouchPosition(x, y float32) Point {
 		int32(y * float32(s.Rect.H)),
 	)
 }
+
+func (p Point) IsInside(rect *sdl.Rect) bool {
+	return rect.X <= p.X && p.X <= rect.X + rect.W - 1 &&
+		rect.Y <= p.Y && p.Y <= rect.Y + rect.H - 1
+}

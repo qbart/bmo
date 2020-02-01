@@ -3,7 +3,8 @@ package bmo
 import "github.com/veandco/go-sdl2/sdl"
 
 type MouseEvent struct {
-	P Point
+	GP Point // global
+	LP Point // local
 }
 
 type OnMouseEventCallback func(event MouseEvent)
@@ -67,9 +68,7 @@ func (c *Component) Draw(renderer *sdl.Renderer) {
 }
 
 func (c *Component) Contains(point Point) bool {
-	return c.visible &&
-		c.Rect.X <= point.X && point.X <= c.Rect.X + c.Rect.W - 1 &&
-		c.Rect.Y <= point.Y && point.Y <= c.Rect.Y + c.Rect.H - 1
+	return c.visible && point.IsInside(&c.Rect)
 }
 
 func (c *Component) Show(visible bool) {
@@ -108,7 +107,8 @@ func (c *Component) handleMouseEvent(p Point, listeners *[]OnMouseEventCallback)
 		}
 		for _, listener := range *listeners {
 			listener(MouseEvent{
-				P: relativeP,
+				LP: relativeP,
+				GP: Point{p.X, p.Y},
 			})
 		}
 	}
